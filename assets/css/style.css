@@ -1,0 +1,16 @@
+:root {
+  --kale:    #013D28;
+  --green:   #0AAD0A;
+  --tuna:    #343538;
+  --cashew:  #FAF1E5;
+  --white:   #FFFFFF;
+
+  --font-body:    'Inter', sans-serif;
+  --size-body:    18px;
+  --line-height:  1.7;
+  --size-metric:  64px;
+}
+
+html { font-family: var(--font); font-size: var(--body-size); color: var(--tuna); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

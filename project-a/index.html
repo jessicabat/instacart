@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catalog-Powered Smart Substitution — Jessica Batbayar</title>
+  <meta name="description" content="A case study in high-stakes AI product design: building a substitution safety engine that brought allergen mismatches from 8.44% to zero." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --kale:    #013D28;
+      --green:   #0AAD0A;
+      --tuna:    #343538;
+      --cashew:  #FAF1E5;
+      --white:   #FFFFFF;
+      --muted:   rgba(52,53,56,0.55);
+      --col:     680px;
+      --wide:    900px;
+    }
+
+    html {
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      background-color: var(--cashew);
+      color: var(--tuna);
+    }
+
+    /* ── NAV ──────────────────────────────────────────── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--kale);
+      padding: 0 32px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav__back {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color 0.15s;
+    }
+    .nav__back:hover { color: var(--white); }
+
+    .nav__links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav__links a {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav__links a:hover { color: var(--white); }
+
+    /* ── ARTICLE WRAPPER ──────────────────────────────── */
+    .article {
+      max-width: var(--col);
+      margin: 0 auto;
+      padding: 72px 24px 120px;
+    }
+
+    /* ── KICKER ───────────────────────────────────────── */
+    .kicker {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 20px;
+    }
+
+    /* ── TITLE ────────────────────────────────────────── */
+    .article__title {
+      font-size: clamp(30px, 5vw, 44px);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--kale);
+      margin-bottom: 20px;
+    }
+
+    /* ── BYLINE ───────────────────────────────────────── */
+    .byline {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(52,53,56,0.12);
+    }
+
+    /* ── BODY TEXT ────────────────────────────────────── */
+    .article p {
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--tuna);
+      margin-bottom: 28px;
+    }
+
+    .article h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--kale);
+      margin: 56px 0 20px;
+      line-height: 1.25;
+    }
+
+    .article h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--kale);
+      margin: 40px 0 14px;
+    }
+
+    /* ── PULL QUOTE ───────────────────────────────────── */
+    .pullquote {
+      border-left: 3px solid var(--green);
+      padding: 4px 0 4px 24px;
+      margin: 40px 0;
+    }
+
+    .pullquote p {
+      font-size: 22px !important;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.5 !important;
+      color: var(--kale) !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* ── METRIC CALLOUT ───────────────────────────────── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0;
+      margin: 40px 0;
+      border: 1px solid rgba(52,53,56,0.12);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .metric {
+      padding: 28px 24px;
+      border-right: 1px solid rgba(52,53,56,0.12);
+      background-color: var(--white);
+    }
+    .metric:last-child { border-right: none; }
+
+    .metric__number {
+      font-size: 36px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--kale);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .metric__number--green { color: var(--green); }
+
+    .metric__label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── WIDE IMAGE (breaks column) ───────────────────── */
+    .wide {
+      max-width: var(--wide);
+      margin: 40px auto;
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      max-width: var(--wide);
+      padding: 0 24px;
+    }
+
+    .wide img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .wide figcaption {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* ── PIPELINE DIAGRAM ─────────────────────────────── */
+    .pipeline {
+      margin: 40px 0;
+      background-color: var(--white);
+      border-radius: 8px;
+      padding: 36px 32px;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .pipeline__step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(52,53,56,0.08);
+    }
+    .pipeline__step:last-child { border-bottom: none; }
+
+    .pipeline__num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: var(--kale);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pipeline__num--gate {
+      background-color: var(--green);
+    }
+
+    .pipeline__content strong {
+      font-weight: 700;
+      color: var(--kale);
+      display: block;
+      margin-bottom: 2px;
+      font-size: 15px;
+    }
+
+    .pipeline__content span {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── TABLE ────────────────────────────────────────── */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 32px 0;
+      font-size: 15px;
+      background-color: var(--white);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .results-table th {
+      background-color: var(--kale);
+      color: var(--white);
+      font-weight: 700;
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    .results-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(52,53,56,0.08);
+      color: var(--tuna);
+      line-height: 1.5;
+    }
+
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr:nth-child(even) td { background-color: rgba(250,241,229,0.4); }
+
+    .td--green { color: var(--green); font-weight: 800; }
+    .td--warn  { color: #c0392b;      font-weight: 700; }
+
+    /* ── FOUR-SIDED GRID ──────────────────────────────── */
+    .foursided {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+
+    .fs-card {
+      background-color: var(--white);
+      border-radius: 8px;
+      padding: 24px;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .fs-card__label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+
+    .fs-card p {
+      font-size: 15px !important;
+      line-height: 1.6 !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* ── DESIGNS SIDE BY SIDE ─────────────────────────── */
+    .designs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 32px 0;
+    }
+
+    .designs figure img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .designs figcaption {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* ── LIMITATION NOTE ──────────────────────────────── */
+    .note {
+      background-color: var(--white);
+      border-left: 3px solid rgba(52,53,56,0.2);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin: 28px 0;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── NEXT PROJECT ─────────────────────────────────── */
+    .next {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(52,53,56,0.12);
+    }
+
+    .next__label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .next__link {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--kale);
+      text-decoration: none;
+      border-bottom: 2px solid var(--green);
+      padding-bottom: 2px;
+      transition: color 0.15s;
+    }
+    .next__link:hover { color: var(--green); }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width: 640px) {
+      .foursided { grid-template-columns: 1fr; }
+      .designs   { grid-template-columns: 1fr; }
+      .metrics   { grid-template-columns: 1fr 1fr; }
+      .metric    { border-right: none; border-bottom: 1px solid rgba(52,53,56,0.12); }
+      .metric:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="../index.html" class="nav__back">← Back to portfolio</a>
+    <div class="nav__links">
+      <a href="https://github.com/YOUR_USERNAME/instacart-project-a" target="_blank" rel="noopener">GitHub</a>
+      <a href="../docs/PRD_A.md" target="_blank">PRD</a>
+    </div>
+  </nav>
+
+  <!-- ARTICLE -->
+  <article class="article">
+
+    <p class="kicker">Project A &middot; Case Study &middot; March 2026</p>
+
+    <h1 class="article__title">Catalog-Powered Smart Substitution via Store View</h1>
+
+    <p class="byline">Jessica Batbayar &mdash; Instacart APM Portfolio &middot; Kaggle Instacart Dataset (2017, 3.4M orders)</p>
+
+    <!-- RESULTS UPFRONT -->
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric__number metric__number--green">0.00%</div>
+        <div class="metric__label">Allergen mismatch rate after guardrail</div>
+      </div>
+      <div class="metric">
+        <div class="metric__number">2,457</div>
+        <div class="metric__label">Unsafe substitutes blocked</div>
+      </div>
+      <div class="metric">
+        <div class="metric__number">84.8%</div>
+        <div class="metric__label">OOS events matched with a safe substitute</div>
+      </div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <h2>The problem hiding in plain sight</h2>
+
+    <p>I started this project by asking a simple question: what actually happens when a shopper fulfills an AI-curated, health-specific cart and one of the items is not on the shelf?</p>
+
+    <p>The default answer is a popularity-based guess. For most items, that is fine. For a user with a severe peanut allergy who ordered peanut-free almond milk, it could be a health incident. For a vegan user, it breaks a dietary commitment they trusted the app to honor. For the retailer, it is a liability they probably did not know they were carrying.</p>
+
+    <p>Before building anything, I read firsthand accounts from Instacart shoppers and consumers on Reddit. Shoppers described the anxiety of grabbing a substitute without knowing if it was safe. Consumers described receiving items that violated dietary restrictions they thought the app understood. That gap &mdash; between what the system assumed was fine and what the user actually needed &mdash; is what this project is trying to close.</p>
+
+    <div class="pullquote">
+      <p>&ldquo;The most important feature of this system is sometimes outputting nothing at all.&rdquo;</p>
+    </div>
+
+    <p>What surprised me is that this failure mode sits at the intersection of three of Instacart&rsquo;s newest AI products: Cart Assistant, Store View, and Catalog Engine. It is not a gap inside any one of them &mdash; it is the gap between all three.</p>
+
+    <!-- SECTION 2 -->
+    <h2>The decision pipeline</h2>
+
+    <p>The instinct when building a substitution system is to find the <em>best</em> substitute. I think the more important question in a health-sensitive context is: which options should be eliminated before any ranking happens at all? Safety is checked first as a hard pass/fail filter. If a product fails, it never gets ranked.</p>
+
+    <div class="pipeline">
+      <div class="pipeline__step">
+        <div class="pipeline__num">1</div>
+        <div class="pipeline__content">
+          <strong>Trigger</strong>
+          <span>Store View shelf confidence score drops below threshold &rarr; engine activates pre-fulfillment</span>
+        </div>
+      </div>
+      <div class="pipeline__step">
+        <div class="pipeline__num">2</div>
+        <div class="pipeline__content">
+          <strong>Candidate pool</strong>
+          <span>All in-stock products in the same aisle as the OOS item</span>
+        </div>
+      </div>
+      <div class="pipeline__step">
+        <div class="pipeline__num pipeline__num--gate">3</div>
+        <div class="pipeline__content">
+          <strong>Allergen gate &mdash; hard reject</strong>
+          <span>Remove any candidate that introduces an allergen absent in the original AND present in the user&rsquo;s profile. Zero exceptions.</span>
+        </div>
+      </div>
+      <div class="pipeline__step">
+        <div class="pipeline__num pipeline__num--gate">4</div>
+        <div class="pipeline__content">
+          <strong>Dietary integrity gate &mdash; hard reject</strong>
+          <span>Remove any candidate that violates a dietary tag the original satisfied (vegan, gluten-free, etc.). Zero exceptions.</span>
+        </div>
+      </div>
+      <div class="pipeline__step">
+        <div class="pipeline__num">5</div>
+        <div class="pipeline__content">
+          <strong>Preference ranking</strong>
+          <span>Score remaining safe candidates: 50% user affinity &middot; 30% price proximity &middot; 20% nutrition similarity</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <h2>What the simulation found</h2>
+
+    <p>I structured the evaluation as an offline A/B simulation &mdash; the same 34,994 OOS events run through both the popularity baseline and the guardrail engine. This gave a direct measure of what the guardrail actually changed.</p>
+
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Popularity baseline</th>
+          <th>Guardrail engine</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Critical mismatch rate</td>
+          <td class="td--warn">8.44%</td>
+          <td class="td--green">0.00%</td>
+        </tr>
+        <tr>
+          <td>Allergen mismatches (absolute)</td>
+          <td class="td--warn">2,457</td>
+          <td class="td--green">0</td>
+        </tr>
+        <tr>
+          <td>Substitution coverage</td>
+          <td>~83%</td>
+          <td class="td--green">84.8%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>A note on the comparison:</strong> The baseline CMR was calculated at the catalog level &mdash; any substitution that introduced a new allergen, regardless of whether a specific user was actually allergic. The guardrail CMR was calculated at the user level, meaning it only counted mismatches that would affect a user who is actually allergic to the introduced ingredient. The user-level definition is stricter and more realistic. The 0.00% result reflects that definition.
+    </div>
+
+    <p>What surprised me: the guardrail never blocked every candidate in a populated aisle. Every time the engine had candidates to evaluate, it found at least one safe one. The 15.2% no-substitute rate came entirely from products outside my 5,000-product catalog scope. In production, with Catalog Engine&rsquo;s full 1.3B+ attribute data points, that gap closes automatically.</p>
+
+    <!-- SECTION 4 -->
+    <h2>One guardrail doing work for four sides</h2>
+
+    <div class="foursided">
+      <div class="fs-card">
+        <p class="fs-card__label">Consumer</p>
+        <p>Allergen and dietary constraints enforced as hard guarantees, not soft preferences. Trust in AI-curated shopping preserved at the fulfillment layer.</p>
+      </div>
+      <div class="fs-card">
+        <p class="fs-card__label">Shopper</p>
+        <p>Pre-vetted substitutes with reason codes. No second-guessing. No absorbing the reputational cost of a system failure they did not choose.</p>
+      </div>
+      <div class="fs-card">
+        <p class="fs-card__label">Retailer</p>
+        <p>AOV retention on OOS events. Liability protection. Cart Assistant&rsquo;s B2B value proposition depends on execution quality at the shopper layer.</p>
+      </div>
+      <div class="fs-card">
+        <p class="fs-card__label">Advertiser</p>
+        <p>Substitution logic is principled and documentable &mdash; opening the door to an &ldquo;approved substitute&rdquo; ad product that respects consumer safety first.</p>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <h2>The design</h2>
+
+    <p>The engine surfaces results in two places: the Shopper app during picking, and the Consumer app as a transparent notification. Both screens were designed in Figma.</p>
+
+    <div class="designs">
+      <figure>
+        <img src="../assets/css/images/project-a/shopper-screen.png" alt="Shopper app OOS alert with top 3 allergen-safe substitutes" />
+        <figcaption>Shopper app &mdash; OOS alert with ranked safe substitutes and reason codes</figcaption>
+      </figure>
+      <figure>
+        <img src="../assets/css/images/project-a/consumer-screen.png" alt="Consumer app substitution notification with allergen-safe badge" />
+        <figcaption>Consumer app &mdash; substitution notification with allergen badge and approve/override CTA</figcaption>
+      </figure>
+    </div>
+
+    <p><a href="https://www.figma.com/design/9REL7LsQSPjYbhzTEPlylg/Instacart" target="_blank" rel="noopener" style="color:var(--kale);font-weight:700;border-bottom:2px solid var(--green);text-decoration:none;padding-bottom:2px;">View full Figma file &rarr;</a></p>
+
+    <!-- SECTION 6 -->
+    <h2>What I would explore next</h2>
+
+    <p>Two directions feel most worth pursuing if I were continuing this work. The first is advertiser substitution controls: letting CPG brands pre-approve specific substitute products for when their items are OOS, with the guardrail still running first. The second is Cart Assistant integration &mdash; surfacing the substitution decision conversationally, so instead of a generic notification a consumer sees: <em>&ldquo;Your almond milk was out of stock. I found an oat milk that fits your dairy-free profile &mdash; same price, similar calories.&rdquo;</em></p>
+
+    <p>Both directions connect to Project B. The shared infrastructure need &mdash; Cart Assistant session context flowing downstream to the fulfillment layer &mdash; is what makes both improvements possible.</p>
+
+    <!-- NEXT -->
+    <div class="next">
+      <p class="next__label">Continue to Project B</p>
+      <a href="../project-b/index.html" class="next__link">Shopper Earnings at Risk: Modeling the Fulfillment Cost of Agentic Commerce &rarr;</a>
+    </div>
+
+  </article>
+
+</body>
+</html>
