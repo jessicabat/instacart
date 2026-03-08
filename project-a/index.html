@@ -521,7 +521,7 @@
       <strong>A note on the comparison:</strong> The baseline mismatch rate was calculated at the catalog level: any substitution that introduced a new allergen counted as a mismatch, regardless of whether a specific user was actually allergic to it. The guardrail mismatch rate was calculated at the user level, meaning it only counted mismatches that would affect a user who is actually allergic to the introduced ingredient. The user-level definition is stricter and more realistic, and the 0.00% result reflects that definition.
     </div>
 
-    <p>What surprised me: the guardrail never blocked every candidate in a populated aisle. Every time the engine had candidates to evaluate, it found at least one safe one. The 15.2% no-substitute rate came entirely from products outside my 5,000-product catalog scope. In production, with Catalog Engine&rsquo;s full 1.3B+ attribute data points, that gap closes automatically.</p>
+    <p>One finding stood out: the guardrail never blocked every candidate in a populated aisle. Every time the engine had candidates to evaluate, it found at least one safe one. The 15.2% no-substitute rate came entirely from products outside my 5,000-product catalog scope. In production, with Catalog Engine&rsquo;s full 1.3B+ attribute data points, that gap closes automatically.</p>
 
     <!-- SECTION 4 -->
     <h2>One guardrail doing work for four sides</h2>

@@ -537,7 +537,7 @@
     <p>When a consumer checks out through a Cart Assistant-powered retailer experience, the order is passed to Instacart&rsquo;s fulfillment engine and assigned to a shopper. The shopper receives a standard SKU list. The recipe Cart Assistant built the cart around, the dietary constraints the consumer mentioned, the preference hierarchy it optimized for: all of that stays in the session and goes no further.</p>
 
     <div class="pullquote">
-      <p>A product can work exactly as designed and still create unintended costs for the people who make it run. This project is about what Cart Assistant costs the shoppers who fulfill its orders.</p>
+      <p>Shoppers are not a direct intended beneficiary of Cart Assistant. They do not interact with it, they do not configure it, and they do not receive its session context. They just walk into a store with a flat item list and a flat batch rate, regardless of how complex the order is.</p>
     </div>
 
     <!-- SECTION 2 -->
@@ -632,41 +632,75 @@
     </div>
 
     <!-- SECTION 5 -->
-    <h2>Three options and a recommendation</h2>
+<h2>Three options and a recommendation</h2>
 
-    <div class="options-grid">
+<p>The earnings gap exists because high-complexity orders take longer to
+fulfill, and they take longer because shoppers navigate unfamiliar items
+without the context Cart Assistant already has. The three options differ
+in whether they address that time cost directly or compensate for it
+after the fact. I recommend Option B long-term, with Option A as a
+bridge while it is being built.</p>
 
-      <div class="option-card option-card--recommended">
-        <div class="option-card__header">
-          <div class="option-card__letter">B</div>
-          <span class="option-card__title">Context Delivery Tooling</span>
-          <span class="option-card__badge">Recommended &middot; long-term</span>
-        </div>
-        <p>Give shoppers a summary of the Cart Assistant session before they start picking: the recipe, the dietary constraint, the substitution boundaries. This is the same upstream data Project A needs to run its substitution safety engine. One pipeline, two surfaces.</p>
-        <p class="option-card__meta">Gets at the root cause directly. Requires a new data pipeline from Cart Assistant to the Shopper app. This is a longer build than Option A.</p>
-      </div>
+<div class="options-grid">
 
-      <div class="option-card">
-        <div class="option-card__header">
-          <div class="option-card__letter">A</div>
-          <span class="option-card__title">Complexity-Adjusted Base Pay</span>
-          <span class="option-card__badge" style="color:var(--muted)">Bridge while B is built</span>
-        </div>
-        <p>Pay shoppers a higher flat rate for orders that exceed a complexity threshold. This directly compensates for the additional labor and can be deployed as a market pilot while Option B is in development.</p>
-        <p class="option-card__meta">This option compensates for the extra time rather than reducing it. Complex orders would still take just as long to fulfill; shoppers would just earn more for the added effort.</p>
-      </div>
-
-      <div class="option-card">
-        <div class="option-card__header">
-          <div class="option-card__letter">C</div>
-          <span class="option-card__title">Complexity-Preference Routing</span>
-          <span class="option-card__badge" style="color:var(--muted)">Data-collection mechanism</span>
-        </div>
-        <p>Let shoppers opt into high-complexity batches for a pay premium. This is market-driven, preserves shopper autonomy, and generates data about what complexity is actually worth based on what shoppers choose when given the option.</p>
-        <p class="option-card__meta">Risks creating a two-tier fulfillment quality dynamic. The information gap between Cart Assistant and the shopper stays in place regardless of which shoppers opt in.</p>
-      </div>
-
+  <div class="option-card">
+    <div class="option-card__header">
+      <div class="option-card__letter">A</div>
+      <span class="option-card__title">Complexity-Adjusted Base Pay</span>
+      <span class="option-card__badge" style="color:var(--muted)">Short-term bridge</span>
     </div>
+    <p>Pay shoppers a higher flat rate for orders that exceed a complexity
+    threshold. This directly compensates for the extra time and can be
+    deployed as a market pilot quickly. The order still takes just as long
+    to fulfill. Shoppers earn more for the added effort while the longer
+    fix is being built.</p>
+    <p class="option-card__meta">Deployable without a new data pipeline.
+    Does not reduce complexity or give shoppers any additional context
+    about the order.</p>
+  </div>
+
+  <div class="option-card option-card--recommended">
+    <div class="option-card__header">
+      <div class="option-card__letter">B</div>
+      <span class="option-card__title">Context Delivery Tooling</span>
+      <span class="option-card__badge">Recommended &middot; long-term</span>
+    </div>
+    <p>Give shoppers a summary of the Cart Assistant session before they
+    start picking: the recipe, the dietary constraint, the substitution
+    boundaries. This shortens the time cost at the source by giving
+    shoppers the context they need to make faster, more confident
+    decisions. It also connects directly to Project A, which requires
+    the same Cart Assistant context to flow into the substitution engine.
+    One pipeline, two surfaces.</p>
+    <p class="option-card__meta">Gets at the root cause directly.
+    Requires a new data pipeline from Cart Assistant to the Shopper app,
+    which makes this a longer build than Option A.</p>
+  </div>
+
+  <div class="option-card">
+    <div class="option-card__header">
+      <div class="option-card__letter">C</div>
+      <span class="option-card__title">Complexity-Preference Routing</span>
+      <span class="option-card__badge" style="color:var(--muted)">Worth monitoring</span>
+    </div>
+    <p>Let shoppers opt into high-complexity batches in exchange for a
+    pay premium. Market-driven and autonomy-preserving. It also generates
+    real data about what complexity is worth based on what shoppers
+    actually choose. A shopper who opts in still arrives at the first
+    aisle without any context about why the order is built the way it is,
+    so the time cost does not go away.</p>
+    <p class="option-card__meta">Useful as a data-collection mechanism
+    and could run alongside Option A. Does not reduce the time cost or
+    close the context gap.</p>
+  </div>
+
+</div>
+
+<p>The full tradeoff analysis and success metrics for each option are
+in the <a href="https://github.com/jessicabat/instacart-shopper-model/blob/main/docs/policy_brief.md"
+target="_blank" rel="noopener"
+style="color:var(--kale);font-weight:700;border-bottom:2px solid var(--green);text-decoration:none;padding-bottom:2px;">policy brief</a>.</p>
+
 
     <!-- SECTION 6 -->
     <h2>Connection to Project A</h2>
