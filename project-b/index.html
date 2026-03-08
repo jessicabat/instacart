@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopper Earnings at Risk — Jessica Batbayar</title>
+  <meta name="description" content="High-complexity Cart Assistant orders take 48.5% longer to fulfill but pay the same flat rate. This is a model of what that means as adoption grows, and what Instacart should consider building before it becomes a problem." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --kale:    #013D28;
+      --green:   #0AAD0A;
+      --tuna:    #343538;
+      --cashew:  #FAF1E5;
+      --white:   #FFFFFF;
+      --muted:   rgba(52,53,56,0.55);
+      --col:     680px;
+      --wide:    900px;
+    }
+
+    html {
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      background-color: var(--cashew);
+      color: var(--tuna);
+    }
+
+    /* ── NAV ──────────────────────────────────────────── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--kale);
+      padding: 0 32px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav__back {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color 0.15s;
+    }
+    .nav__back:hover { color: var(--white); }
+
+    .nav__links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav__links a {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav__links a:hover { color: var(--white); }
+
+    /* ── ARTICLE WRAPPER ──────────────────────────────── */
+    .article {
+      max-width: var(--col);
+      margin: 0 auto;
+      padding: 72px 24px 120px;
+    }
+
+    /* ── KICKER ───────────────────────────────────────── */
+    .kicker {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 20px;
+    }
+
+    /* ── TITLE ────────────────────────────────────────── */
+    .article__title {
+      font-size: clamp(30px, 5vw, 44px);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--kale);
+      margin-bottom: 20px;
+    }
+
+    /* ── BYLINE ───────────────────────────────────────── */
+    .byline {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(52,53,56,0.12);
+    }
+
+    /* ── BODY TEXT ────────────────────────────────────── */
+    .article p {
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--tuna);
+      margin-bottom: 28px;
+    }
+
+    .article h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--kale);
+      margin: 56px 0 20px;
+      line-height: 1.25;
+    }
+
+    .article h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--kale);
+      margin: 40px 0 14px;
+    }
+
+    /* ── PULL QUOTE ───────────────────────────────────── */
+    .pullquote {
+      border-left: 3px solid var(--green);
+      padding: 4px 0 4px 24px;
+      margin: 40px 0;
+    }
+
+    .pullquote p {
+      font-size: 22px !important;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.5 !important;
+      color: var(--kale) !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* ── METRIC CALLOUT ───────────────────────────────── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0;
+      margin: 40px 0;
+      border: 1px solid rgba(52,53,56,0.12);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .metric {
+      padding: 28px 24px;
+      border-right: 1px solid rgba(52,53,56,0.12);
+      background-color: var(--white);
+    }
+    .metric:last-child { border-right: none; }
+
+    .metric__number {
+      font-size: 36px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--kale);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .metric__number--green { color: var(--green); }
+
+    .metric__label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── WIDE IMAGE (breaks column) ───────────────────── */
+    .wide {
+      max-width: var(--wide);
+      margin: 40px auto;
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      max-width: var(--wide);
+      padding: 0 24px;
+    }
+
+    .wide img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .wide figcaption {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* ── PIPELINE DIAGRAM ─────────────────────────────── */
+    .pipeline {
+      margin: 40px 0;
+      background-color: var(--white);
+      border-radius: 8px;
+      padding: 36px 32px;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .pipeline__step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(52,53,56,0.08);
+    }
+    .pipeline__step:last-child { border-bottom: none; }
+
+    .pipeline__num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: var(--kale);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pipeline__num--gate {
+      background-color: var(--green);
+    }
+
+    .pipeline__content strong {
+      font-weight: 700;
+      color: var(--kale);
+      display: block;
+      margin-bottom: 2px;
+      font-size: 15px;
+    }
+
+    .pipeline__content span {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── TABLE ────────────────────────────────────────── */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 32px 0;
+      font-size: 15px;
+      background-color: var(--white);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .results-table th {
+      background-color: var(--kale);
+      color: var(--white);
+      font-weight: 700;
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    .results-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(52,53,56,0.08);
+      color: var(--tuna);
+      line-height: 1.5;
+    }
+
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr:nth-child(even) td { background-color: rgba(250,241,229,0.4); }
+
+    .td--green { color: var(--green); font-weight: 800; }
+    .td--warn  { color: #c0392b;      font-weight: 700; }
+
+    /* ── FOUR-SIDED GRID ──────────────────────────────── */
+    .foursided {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+
+    .fs-card {
+      background-color: var(--white);
+      border-radius: 8px;
+      padding: 24px;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .fs-card__label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+
+    .fs-card p {
+      font-size: 15px !important;
+      line-height: 1.6 !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* ── DESIGNS SIDE BY SIDE ─────────────────────────── */
+    .designs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 32px 0;
+    }
+
+    .designs figure img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .designs figcaption {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* ── LIMITATION NOTE ──────────────────────────────── */
+    .note {
+      background-color: var(--white);
+      border-left: 3px solid rgba(52,53,56,0.2);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin: 28px 0;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── NEXT PROJECT ─────────────────────────────────── */
+    .next {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(52,53,56,0.12);
+    }
+
+    .next__label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .next__link {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--kale);
+      text-decoration: none;
+      border-bottom: 2px solid var(--green);
+      padding-bottom: 2px;
+      transition: color 0.15s;
+    }
+    .next__link:hover { color: var(--green); }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width: 640px) {
+      .foursided { grid-template-columns: 1fr; }
+      .designs   { grid-template-columns: 1fr; }
+      .metrics   { grid-template-columns: 1fr 1fr; }
+      .metric    { border-right: none; border-bottom: 1px solid rgba(52,53,56,0.12); }
+      .metric:last-child { border-bottom: none; }
+    }
+
+    .scenario-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      background-color: var(--white);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(52,53,56,0.1);
+      margin: 32px 0;
+    }
+
+    .scenario-table th {
+      background-color: var(--kale);
+      color: var(--white);
+      font-weight: 700;
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .scenario-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(52,53,56,0.08);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .scenario-table tr:last-child td { border-bottom: none; }
+    .scenario-table tr:nth-child(even) td { background-color: rgba(250,241,229,0.4); }
+
+    .tier-row td:first-child { font-weight: 700; }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+
+    .option-card {
+      background-color: var(--white);
+      border-radius: 8px;
+      padding: 28px;
+      border: 1px solid rgba(52,53,56,0.1);
+    }
+
+    .option-card--recommended {
+      border-color: var(--green);
+      border-width: 2px;
+    }
+
+    .option-card__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .option-card__letter {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--kale);
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .option-card--recommended .option-card__letter {
+      background-color: var(--green);
+    }
+
+    .option-card__title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--kale);
+    }
+
+    .option-card__badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-left: auto;
+    }
+
+    .option-card p {
+      font-size: 15px !important;
+      line-height: 1.65 !important;
+      margin-bottom: 10px !important;
+    }
+
+    .option-card p:last-child { margin-bottom: 0 !important; }
+
+    .option-card__meta {
+      font-size: 13px !important;
+      color: var(--muted) !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="nav">
+    <a href="../index.html" class="nav__back">&#8592; Back to portfolio</a>
+    <div class="nav__links">
+      <a href="https://github.com/jessicabat/instacart-shopper-model" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/jessicabat/instacart-shopper-model/blob/main/docs/policy_brief.md" target="_blank">Policy brief</a>
+      <a href="https://github.com/jessicabat/instacart-shopper-model/blob/main/docs/PRD_B.md" target="_blank">PRD</a>
+    </div>
+  </nav>
+
+  <article class="article">
+
+    <p class="kicker">Project B &middot; Policy Analysis &middot; March 2026</p>
+
+    <h1 class="article__title">Shopper Earnings at Risk: Modeling the Fulfillment Cost of Agentic Commerce</h1>
+
+    <p class="byline">Jessica Batbayar &middot; Instacart APM Projects &middot; Kaggle Instacart Dataset (2017, 3.2M orders)</p>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric__number" style="color:var(--kale)">48.5%</div>
+        <div class="metric__label">Lower hourly earnings on high-complexity orders (base pay only)</div>
+      </div>
+      <div class="metric">
+        <div class="metric__number">&#8722;12.6%</div>
+        <div class="metric__label">Projected shopper earnings at 25% Cart Assistant adoption</div>
+      </div>
+      <div class="metric">
+        <div class="metric__number">3.2M</div>
+        <div class="metric__label">Orders analyzed</div>
+      </div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <h2>The side of the marketplace that wasn&rsquo;t the primary audience</h2>
+
+    <p>Cart Assistant was built to serve retailers and their customers. Retailers get a competitive, AI-powered shopping experience. Consumers get a smarter, more personalized way to build their grocery baskets. Advertisers benefit indirectly: higher-intent consumers building larger, more intentional baskets means better placement opportunities and stronger conversion on sponsored products.</p>
+
+    <p>What is less examined is what happens to the fourth side: shoppers.</p>
+
+    <p>When a consumer checks out through a Cart Assistant-powered retailer experience, the order is passed to Instacart&rsquo;s fulfillment engine and assigned to a shopper. The shopper receives a standard SKU list. The recipe Cart Assistant built the cart around, the dietary constraints the consumer mentioned, the preference hierarchy it optimized for: all of that stays in the session and goes no further.</p>
+
+    <div class="pullquote">
+      <p>A product can work exactly as designed and still create unintended costs for the people who make it run. This project is about what Cart Assistant costs the shoppers who fulfill its orders.</p>
+    </div>
+
+    <!-- SECTION 2 -->
+    <h2>Building a complexity score</h2>
+
+    <p>Since Cart Assistant order data is not publicly available, I defined a &ldquo;high-complexity order proxy&rdquo; using five structural features from the Kaggle dataset. Each feature was normalized to a 0&ndash;1 scale and combined with equal weights into a composite score per order. Orders were then split into Low, Medium, and High tiers using quantile-based segmentation.</p>
+
+    <table class="results-table">
+      <thead>
+        <tr><th>Feature</th><th>Rationale</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Order size (item count)</td><td>More items = more decisions and substitution risk</td></tr>
+        <tr><td>Unique aisles visited</td><td>More aisles = longer physical pick path</td></tr>
+        <tr><td>Department diversity</td><td>Crossing departments signals a multi-meal or multi-purpose cart</td></tr>
+        <tr><td>Reorder rate (inverted)</td><td>Low reorder rate = more unfamiliar items = more decision time per item</td></tr>
+        <tr><td>Days since prior order</td><td>Longer gaps signal a full shop, not a top-up</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">Equal weights are the defensible default when no ground-truth outcome variable is available to learn weights from (like actual observed pick time from the Shopper app). A production model would calibrate these weights against real telemetry.</div>
+
+    <!-- SECTION 3 -->
+    <h2>What the earnings model found</h2>
+
+    <figure class="wide">
+      <img src="../assets/images/project-b/03_hourly_earnings_by_tier.png" alt="Hourly earnings by complexity tier, base pay vs. with proportional tip included" />
+      <figcaption>Hourly earnings by complexity tier: base pay only vs. proportional tip included</figcaption>
+    </figure>
+
+    <table class="scenario-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Avg hourly (base only)</th>
+          <th>Avg hourly (with tip)</th>
+          <th>Avg fulfillment time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="tier-row"><td>&#x1F7E2; Low</td><td class="td--green">$16.33/hr</td><td>$22.07/hr</td><td>30.4 min</td></tr>
+        <tr class="tier-row"><td>&#x1F7E1; Medium</td><td>$11.94/hr</td><td>$18.26/hr</td><td>45.1 min</td></tr>
+        <tr class="tier-row"><td>&#x1F534; High</td><td class="td--warn">$8.41/hr</td><td>$14.46/hr</td><td>67.8 min</td></tr>
+      </tbody>
+    </table>
+
+    <h3>What happens as Cart Assistant adoption grows</h3>
+
+    <figure class="wide">
+      <img src="../assets/images/project-b/04_scenario_analysis.png" alt="Projected average hourly earnings under 10%, 25%, and 50% Cart Assistant adoption" />
+      <figcaption>Projected average hourly earnings under three Cart Assistant adoption scenarios</figcaption>
+    </figure>
+
+    <table class="scenario-table">
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>Projected avg hourly</th>
+          <th>Change from baseline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Baseline (today)</td><td>$12.23/hr</td><td>&ndash;</td></tr>
+        <tr><td>10% shift to High complexity</td><td>$11.61/hr</td><td class="td--warn">&#8722;5.1%</td></tr>
+        <tr><td>25% shift to High complexity</td><td>$10.69/hr</td><td class="td--warn">&#8722;12.6%</td></tr>
+        <tr><td>50% shift to High complexity</td><td>$9.14/hr</td><td class="td--warn">&#8722;25.3%</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">The base-case 1.5x complexity multiplier for High-tier orders was stress-tested at 1.3x and 1.8x. The earnings gap ranged from 43.6% to 54.3% across all three settings. The conclusion holds across all parameter choices tested.</div>
+
+    <!-- SECTION 4 -->
+    <h2>Why each side of the marketplace has a stake in this</h2>
+
+    <div class="foursided">
+      <div class="fs-card">
+        <p class="fs-card__label">Shopper</p>
+        <p>The earnings gap is invisible to the people experiencing it. They just notice their hourly yield feels lower on certain orders, and over time they either start avoiding complex batches or leave the platform altogether.</p>
+      </div>
+      <div class="fs-card">
+        <p class="fs-card__label">Consumer</p>
+        <p>Cart Assistant&rsquo;s highest-intent orders get deprioritized or fulfilled with errors by time-pressured shoppers. The consumer-facing improvement degrades at the fulfillment layer.</p>
+      </div>
+      <div class="fs-card">
+        <p class="fs-card__label">Retailer</p>
+        <p>Retailers evaluate Cart Assistant on outcomes. When shoppers make errors on complex orders, retailers may lose confidence in the product even though the underlying issue is about how shoppers are compensated for complex work.</p>
+      </div>
+      <div class="fs-card">
+        <p class="fs-card__label">Advertiser</p>
+        <p>Cart Assistant tends to generate larger, more intentional baskets built around meals and dietary goals. That is exactly the kind of shopping context where sponsored product placement performs well. If fulfillment quality on those orders degrades, the consumer experience that makes them worth targeting gets worse too.</p>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <h2>Three options and a recommendation</h2>
+
+    <div class="options-grid">
+
+      <div class="option-card option-card--recommended">
+        <div class="option-card__header">
+          <div class="option-card__letter">B</div>
+          <span class="option-card__title">Context Delivery Tooling</span>
+          <span class="option-card__badge">Recommended &middot; long-term</span>
+        </div>
+        <p>Give shoppers a summary of the Cart Assistant session before they start picking: the recipe, the dietary constraint, the substitution boundaries. This is the same upstream data Project A needs to run its substitution safety engine. One pipeline, two surfaces.</p>
+        <p class="option-card__meta">Gets at the root cause directly. Requires a new data pipeline from Cart Assistant to the Shopper app. This is a longer build than Option A.</p>
+      </div>
+
+      <div class="option-card">
+        <div class="option-card__header">
+          <div class="option-card__letter">A</div>
+          <span class="option-card__title">Complexity-Adjusted Base Pay</span>
+          <span class="option-card__badge" style="color:var(--muted)">Bridge while B is built</span>
+        </div>
+        <p>Pay shoppers a higher flat rate for orders that exceed a complexity threshold. This directly compensates for the additional labor and can be deployed as a market pilot while Option B is in development.</p>
+        <p class="option-card__meta">This option compensates for the extra time rather than reducing it. Complex orders would still take just as long to fulfill; shoppers would just earn more for the added effort.</p>
+      </div>
+
+      <div class="option-card">
+        <div class="option-card__header">
+          <div class="option-card__letter">C</div>
+          <span class="option-card__title">Complexity-Preference Routing</span>
+          <span class="option-card__badge" style="color:var(--muted)">Data-collection mechanism</span>
+        </div>
+        <p>Let shoppers opt into high-complexity batches for a pay premium. This is market-driven, preserves shopper autonomy, and generates data about what complexity is actually worth based on what shoppers choose when given the option.</p>
+        <p class="option-card__meta">Risks creating a two-tier fulfillment quality dynamic. The information gap between Cart Assistant and the shopper stays in place regardless of which shoppers opt in.</p>
+      </div>
+
+    </div>
+
+    <!-- SECTION 6 -->
+    <h2>Connection to Project A</h2>
+
+    <p>Project A asks: when a Cart Assistant-generated order hits an out-of-stock item, is the substitute safe for the consumer? Project B asks: what is the cost to the shopper of navigating these decisions without context, and does that cost scale with order complexity?</p>
+
+    <p>Both projects trace back to the same missing piece. Cart Assistant session context needs to flow downstream: to the substitution engine in Project A, and to the shopper before they start picking in Project B. Building that pipeline once and routing it to both surfaces is more efficient than building it twice, and it makes the combined case for investing in it much harder to ignore.</p>
+
+    <div class="next">
+      <p class="next__label">Back to Project A</p>
+      <a href="../project-a/index.html" class="next__link">Catalog-Powered Smart Substitution via Store View &rarr;</a>
+    </div>
+
+  </article>
+
+</body>
+</html>

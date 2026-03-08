@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Catalog-Powered Smart Substitution — Jessica Batbayar</title>
-  <meta name="description" content="A case study in high-stakes AI product design: building a substitution safety engine that brought allergen mismatches from 8.44% to zero." />
+  <meta name="description" content="A guardrail I built to figure out what should happen when a health-specific Cart Assistant order hits an out-of-stock item during fulfillment. It brought allergen mismatches from 8.44% to zero." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -397,8 +397,8 @@
   <nav class="nav">
     <a href="../index.html" class="nav__back">← Back to portfolio</a>
     <div class="nav__links">
-      <a href="https://github.com/YOUR_USERNAME/instacart-project-a" target="_blank" rel="noopener">GitHub</a>
-      <a href="../docs/PRD_A.md" target="_blank">PRD</a>
+      <a href="https://github.com/jessicabat/instacart-substitution" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/jessicabat/instacart-substitution/blob/main/docs/PRD_A.md" target="_blank">PRD</a>
     </div>
   </nav>
 
@@ -409,7 +409,7 @@
 
     <h1 class="article__title">Catalog-Powered Smart Substitution via Store View</h1>
 
-    <p class="byline">Jessica Batbayar &mdash; Instacart APM Portfolio &middot; Kaggle Instacart Dataset (2017, 3.4M orders)</p>
+    <p class="byline">Jessica Batbayar &mdash; Instacart APM Projects &middot; Kaggle Instacart Dataset (2017, 3.4M orders)</p>
 
     <!-- RESULTS UPFRONT -->
     <div class="metrics">
@@ -434,25 +434,25 @@
 
     <p>The default answer is a popularity-based guess. For most items, that is fine. For a user with a severe peanut allergy who ordered peanut-free almond milk, it could be a health incident. For a vegan user, it breaks a dietary commitment they trusted the app to honor. For the retailer, it is a liability they probably did not know they were carrying.</p>
 
-    <p>Before building anything, I read firsthand accounts from Instacart shoppers and consumers on Reddit. Shoppers described the anxiety of grabbing a substitute without knowing if it was safe. Consumers described receiving items that violated dietary restrictions they thought the app understood. That gap &mdash; between what the system assumed was fine and what the user actually needed &mdash; is what this project is trying to close.</p>
+    <p>Before building anything, I read firsthand accounts from Instacart shoppers and consumers on Reddit. Shoppers described the anxiety of grabbing a substitute without knowing if it was safe. Consumers described receiving items that violated dietary restrictions they thought the app understood. That gap is what this project is trying to close: the distance between what the system assumed was fine and what the user actually needed.</p>
 
     <div class="pullquote">
-      <p>&ldquo;The most important feature of this system is sometimes outputting nothing at all.&rdquo;</p>
+      <p>The most important feature of this system is sometimes outputting nothing at all.</p>
     </div>
 
-    <p>What surprised me is that this failure mode sits at the intersection of three of Instacart&rsquo;s newest AI products: Cart Assistant, Store View, and Catalog Engine. It is not a gap inside any one of them &mdash; it is the gap between all three.</p>
+    <p>What surprised me is that Cart Assistant, Store View, and Catalog Engine each handle part of this well. The failure mode lives in how they connect to each other at the moment an item goes out of stock during fulfillment.</p>
 
     <!-- SECTION 2 -->
     <h2>The decision pipeline</h2>
 
-    <p>The instinct when building a substitution system is to find the <em>best</em> substitute. I think the more important question in a health-sensitive context is: which options should be eliminated before any ranking happens at all? Safety is checked first as a hard pass/fail filter. If a product fails, it never gets ranked.</p>
+    <p>The instinct when building a substitution system is to find the <em>best</em> substitute. I think the more important question in a health-sensitive context is: which options should be eliminated before any ranking happens at all? Safety is checked first as a pass/fail filter. If a product fails, it never gets ranked.</p>
 
     <div class="pipeline">
       <div class="pipeline__step">
         <div class="pipeline__num">1</div>
         <div class="pipeline__content">
           <strong>Trigger</strong>
-          <span>Store View shelf confidence score drops below threshold &rarr; engine activates pre-fulfillment</span>
+          <span>Store View shelf confidence score drops below threshold &rarr; engine activates before the shopper is assigned</span>
         </div>
       </div>
       <div class="pipeline__step">
@@ -465,14 +465,14 @@
       <div class="pipeline__step">
         <div class="pipeline__num pipeline__num--gate">3</div>
         <div class="pipeline__content">
-          <strong>Allergen gate &mdash; hard reject</strong>
-          <span>Remove any candidate that introduces an allergen absent in the original AND present in the user&rsquo;s profile. Zero exceptions.</span>
+          <strong>Allergen gate (pass/fail)</strong>
+          <span>Remove any candidate that introduces an allergen absent in the original AND present in the user&rsquo;s allergy profile. Zero exceptions.</span>
         </div>
       </div>
       <div class="pipeline__step">
         <div class="pipeline__num pipeline__num--gate">4</div>
         <div class="pipeline__content">
-          <strong>Dietary integrity gate &mdash; hard reject</strong>
+          <strong>Dietary integrity gate (pass/fail)</strong>
           <span>Remove any candidate that violates a dietary tag the original satisfied (vegan, gluten-free, etc.). Zero exceptions.</span>
         </div>
       </div>
@@ -488,7 +488,7 @@
     <!-- SECTION 3 -->
     <h2>What the simulation found</h2>
 
-    <p>I structured the evaluation as an offline A/B simulation &mdash; the same 34,994 OOS events run through both the popularity baseline and the guardrail engine. This gave a direct measure of what the guardrail actually changed.</p>
+    <p>I structured the evaluation as an offline A/B simulation. The same 34,994 OOS events ran through both the popularity baseline and the guardrail engine, which gave a direct measure of what the guardrail actually changed.</p>
 
     <table class="results-table">
       <thead>
@@ -518,7 +518,7 @@
     </table>
 
     <div class="note">
-      <strong>A note on the comparison:</strong> The baseline CMR was calculated at the catalog level &mdash; any substitution that introduced a new allergen, regardless of whether a specific user was actually allergic. The guardrail CMR was calculated at the user level, meaning it only counted mismatches that would affect a user who is actually allergic to the introduced ingredient. The user-level definition is stricter and more realistic. The 0.00% result reflects that definition.
+      <strong>A note on the comparison:</strong> The baseline mismatch rate was calculated at the catalog level: any substitution that introduced a new allergen counted as a mismatch, regardless of whether a specific user was actually allergic to it. The guardrail mismatch rate was calculated at the user level, meaning it only counted mismatches that would affect a user who is actually allergic to the introduced ingredient. The user-level definition is stricter and more realistic, and the 0.00% result reflects that definition.
     </div>
 
     <p>What surprised me: the guardrail never blocked every candidate in a populated aisle. Every time the engine had candidates to evaluate, it found at least one safe one. The 15.2% no-substitute rate came entirely from products outside my 5,000-product catalog scope. In production, with Catalog Engine&rsquo;s full 1.3B+ attribute data points, that gap closes automatically.</p>
@@ -529,19 +529,19 @@
     <div class="foursided">
       <div class="fs-card">
         <p class="fs-card__label">Consumer</p>
-        <p>Allergen and dietary constraints enforced as hard guarantees, not soft preferences. Trust in AI-curated shopping preserved at the fulfillment layer.</p>
+        <p>Allergen and dietary constraints are enforced as absolute limits before any ranking happens. The consumer&rsquo;s health profile shapes the result from the very first step.</p>
       </div>
       <div class="fs-card">
         <p class="fs-card__label">Shopper</p>
-        <p>Pre-vetted substitutes with reason codes. No second-guessing. No absorbing the reputational cost of a system failure they did not choose.</p>
+        <p>Pre-vetted substitutes arrive with reason codes explaining why each one was chosen. The shopper can pick with confidence and does not absorb the reputational cost of a system error they had no part in.</p>
       </div>
       <div class="fs-card">
         <p class="fs-card__label">Retailer</p>
-        <p>AOV retention on OOS events. Liability protection. Cart Assistant&rsquo;s B2B value proposition depends on execution quality at the shopper layer.</p>
+        <p>Basket value is preserved on out-of-stock events rather than lost to abandonment. The liability risk of a wrong substitute reaching an allergic consumer is eliminated before it can become a retailer problem.</p>
       </div>
       <div class="fs-card">
         <p class="fs-card__label">Advertiser</p>
-        <p>Substitution logic is principled and documentable &mdash; opening the door to an &ldquo;approved substitute&rdquo; ad product that respects consumer safety first.</p>
+        <p>Substitution logic is transparent and rule-based, which opens the door to an &ldquo;approved substitute&rdquo; ad product where brands can designate preferred alternatives within the safety constraints.</p>
       </div>
     </div>
 
@@ -552,12 +552,12 @@
 
     <div class="designs">
       <figure>
-        <img src="../assets/css/images/project-a/shopper-screen.png" alt="Shopper app OOS alert with top 3 allergen-safe substitutes" />
-        <figcaption>Shopper app &mdash; OOS alert with ranked safe substitutes and reason codes</figcaption>
+        <img src="../assets/images/project-a/shopper-screen.png" alt="Shopper app OOS alert with top 3 allergen-safe substitutes" />
+        <figcaption>Shopper app: OOS alert with ranked safe substitutes and reason codes</figcaption>
       </figure>
       <figure>
-        <img src="../assets/css/images/project-a/consumer-screen.png" alt="Consumer app substitution notification with allergen-safe badge" />
-        <figcaption>Consumer app &mdash; substitution notification with allergen badge and approve/override CTA</figcaption>
+        <img src="../assets/images/project-a/consumer-screen.png" alt="Consumer app substitution notification with allergen-safe badge" />
+        <figcaption>Consumer app: substitution notification with allergen badge and approve/override option</figcaption>
       </figure>
     </div>
 
@@ -566,11 +566,10 @@
     <!-- SECTION 6 -->
     <h2>What I would explore next</h2>
 
-    <p>Two directions feel most worth pursuing if I were continuing this work. The first is advertiser substitution controls: letting CPG brands pre-approve specific substitute products for when their items are OOS, with the guardrail still running first. The second is Cart Assistant integration &mdash; surfacing the substitution decision conversationally, so instead of a generic notification a consumer sees: <em>&ldquo;Your almond milk was out of stock. I found an oat milk that fits your dairy-free profile &mdash; same price, similar calories.&rdquo;</em></p>
+    <p>Two directions feel most worth pursuing if I were continuing this work. The first is advertiser substitution controls: letting CPG brands pre-approve specific substitute products for when their items are out of stock, with the guardrail still running first so a brand can never approve a substitute that violates a user&rsquo;s allergy or dietary profile. The second is a Cart Assistant integration that would surface the substitution decision conversationally, so instead of a generic notification a consumer sees something like: <em>&ldquo;Your almond milk was out of stock. I found an oat milk that fits your dairy-free profile. Same price, similar calories.&rdquo;</em></p>
 
-    <p>Both directions connect to Project B. The shared infrastructure need &mdash; Cart Assistant session context flowing downstream to the fulfillment layer &mdash; is what makes both improvements possible.</p>
+    <p>Both directions depend on the same thing: Cart Assistant session context flowing downstream to the fulfillment layer. That is also what Project B is about.</p>
 
-    <!-- NEXT -->
     <div class="next">
       <p class="next__label">Continue to Project B</p>
       <a href="../project-b/index.html" class="next__link">Shopper Earnings at Risk: Modeling the Fulfillment Cost of Agentic Commerce &rarr;</a>
